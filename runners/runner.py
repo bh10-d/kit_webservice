@@ -7,6 +7,7 @@ import socket
 import json
 import requests
 from dotenv import load_dotenv, set_key
+import threading
 
 # Tự động load từ file .env
 ENV_PATH = ".env"
@@ -83,20 +84,17 @@ def wait_for_rabbitmq(max_retries=10, delay=3):
     print("❌ Không thể kết nối đến RabbitMQ sau nhiều lần thử.", flush=True)
     exit(1)
 
-
-def callback(ch, method, properties, body):
-
-    log("📥 Đã gọi callback.")
-    log(f"📦 Raw body: {body}")
+# ✨ Hàm xử lý job trong thread riêng biệt
+def handle_job(body):
+    log("📥 Xử lý job trong thread riêng biệt.")
+    global key
     try:
         data = json.loads(body)
-        log(f"📨 Parsed message: {data}")
-        log(f"📨 Nhận được message: {data}")
-        # script = f"./check.sh"
+        key = data.get("id")
         script = data.get("script")
         subDomain = data.get("subDomain")
-        log(f"📁 Script được lấy ra: {script}")
-        # script_result = execute_script(script)
+        log(f"📁 Script: {script} | Subdomain: {subDomain}")
+
         success, output = execute_script(script, subDomain)
 
         response = {
@@ -106,17 +104,22 @@ def callback(ch, method, properties, body):
             "log": output
         }
 
-        send_response(KEY_ID, response)
-
     except Exception as e:
-        log(f"❌ Lỗi khi xử lý message: {e}")
-        log(f"Nội dung thô: {body}")
+        log(f"❌ Lỗi xử lý job: {e}")
         response = {
-            "id": data.get("id"),
+            "id": data.get("id") if 'data' in locals() else None,
             "status": "error",
             "message": str(e) or "Unknown error"
         }
-        send_response(KEY_ID, response)
+
+    # send_response(KEY_ID, response)
+    send_response(key, response)
+
+# 🧠 Hàm callback gọi mỗi khi RabbitMQ gửi job tới
+def callback(ch, method, properties, body):
+    log("📨 Đã nhận message mới. Tạo thread xử lý...")
+    thread = threading.Thread(target=handle_job, args=(body,))
+    thread.start()
 
 def send_response(queue, data):
     connection = pika.BlockingConnection(
@@ -125,7 +128,9 @@ def send_response(queue, data):
     channel = connection.channel()
 
     # Tạo tên queue phản hồi mới
-    response_queue = f"{queue}_response"
+    # response_queue = f"{queue}_response"
+    id = data.get("id")
+    response_queue = f"{id}_response"
     channel.queue_declare(queue=response_queue, durable=True)
 
     channel.basic_publish(
