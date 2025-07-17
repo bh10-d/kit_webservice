@@ -1,0 +1,6 @@
+flask 
+pika 
+paramiko 
+flask_sqlalchemy 
+requests 
+python-dotenv
