@@ -1,1 +1,6 @@
 rabbitmq_data
+*.db
+.env
+*.tar*
+*.zip*
+*.db
