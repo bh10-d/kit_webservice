@@ -10,17 +10,22 @@ import (
 	"fmt"
 )
 
-
+// os.Getenv("HOST_QUEUE")
+// var HOST_QUEUE = "10.24.191.38"
 var HOST_QUEUE = os.Getenv("HOST_QUEUE")
 var HOST_QUEUE_PORT = os.Getenv("HOST_QUEUE_PORT")
 func Dial() (*amqp.Connection, error) {
 	// return amqp.Dial("amqp://guest:guest@" + HOST_QUEUE + ":`HOST_QUEUE_PORT`/")
-	return amqp.Dial(fmt.Sprintf("amqp://guest:guest@%s:%s/", HOST_QUEUE, HOST_QUEUE_PORT))
+	host := os.Getenv("HOST_QUEUE")
+    port := os.Getenv("HOST_QUEUE_PORT")
+	return amqp.Dial(fmt.Sprintf("amqp://user:password@%s:%s/", host, port))
 }
 
 func SendToQueue(runnerID string, data map[string]interface{}) string {
 	// conn, err := amqp.Dial("amqp://guest:guest@" + HOST_QUEUE + ":5672/")
-	conn, err := amqp.Dial(fmt.Sprintf("amqp://guest:guest@%s:%s/", HOST_QUEUE, HOST_QUEUE_PORT))
+	host := os.Getenv("HOST_QUEUE")
+    port := os.Getenv("HOST_QUEUE_PORT")
+	conn, err := amqp.Dial(fmt.Sprintf("amqp://user:password@%s:%s/", host, port))
 	if err != nil {
 		log.Printf("Failed to connect to RabbitMQ: %v", err)
 		return ""
