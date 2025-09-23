@@ -7,11 +7,30 @@ import (
 	"go-controller/db"
 	"go-controller/handler"
 	"go-controller/model"
+	"go-controller/util"
+	"fmt"
+	"log"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Println("⚠️ Không tìm thấy file .env, dùng env của hệ thống")
+	}
 	db.InitDB()
 	r := gin.Default()
+
+	r.POST("/get-scripts", func(c *gin.Context) {
+		var payload map[string]interface{}
+		if err := c.BindJSON(&payload); err != nil {
+			c.JSON(400, gin.H{"error": "Missing JSON payload"})
+			return
+		}
+		c.JSON(200, gin.H{
+			"scripts": util.ListScripts(),
+		})
+	})
 
 	r.POST("/check-site", func(c *gin.Context) {
 		var payload map[string]interface{}
@@ -25,6 +44,7 @@ func main() {
 			return
 		}
 		payload["script"] = "check_site.sh"
+		fmt.Println(payload)
 		tag, _ := payload["tag"].(string)
 		if tag == "" { tag = "nginx" }
 		result, status := handler.HandleFunc(tag, payload)
@@ -123,7 +143,7 @@ func main() {
 		tags, _ := data["tags"].(string)
 		runner := model.Runner{
 			ID: handler.GenerateKey(),
-			Name: name,
+			HostName: name,
 			IP: ip,
 			Tags: tags,
 		}
@@ -133,6 +153,16 @@ func main() {
 			"runner": runner,
 		})
 	})
+
+	// script := model.Scripts{
+	// 	ScriptID: "1",
+	// 	FileName: "check_site.sh",
+	// 	Description: "Kiểm tra trạng thái website",
+	// 	Param: []string{"subDomain"},
+	// }
+	// db.DB.FirstOrCreate(&script, model.Scripts{ScriptID: "1"})
+
+	// fmt.Println("sciprt: ", script)
 
 	port := os.Getenv("PORT")
 	if port == "" {
