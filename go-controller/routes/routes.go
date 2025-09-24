@@ -8,7 +8,7 @@ import (
 // SetupRoutes configures all routes for the application
 func SetupRoutes(r *gin.Engine) {
 	// Scripts routes
-	r.POST("/get-scripts", handler.GetScripts)
+	// r.POST("/get-scripts", handler.GetScripts)
 	
 	// Site management routes
 	r.POST("/check-site", handler.CheckSite)
@@ -19,6 +19,9 @@ func SetupRoutes(r *gin.Engine) {
 	// Runner management routes
 	r.POST("/register", handler.RegisterRunner)
 	
-	// Job management routes
+	// Management routes
 	r.GET("/get-jobs", handler.GetJobs)
+	r.GET("/get-runners", handler.GetRunners)
+	r.GET("/get-scripts", handler.GetScripts)
+	r.GET("/get-logs", handler.GetLogs)
 }

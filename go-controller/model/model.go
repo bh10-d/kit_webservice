@@ -3,6 +3,7 @@ package model
 import (
 	"gorm.io/gorm"
 	"github.com/lib/pq"
+	"time"
 )
 
 type Runner struct {
@@ -10,6 +11,9 @@ type Runner struct {
 	HostName string `json:"hostname"`
 	IP   string `json:"ip"`
 	Tags string `json:"tags"`
+	CreatedAt time.Time      `json:"created_at"`
+    UpdatedAt time.Time      `json:"updated_at"`
+    DeletedAt gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty"` // nếu muốn soft delete
 }
 
 type Job struct {
@@ -20,6 +24,9 @@ type Job struct {
 	RequestPayload string
 	ResponsePayload string
 	Timeout        bool
+	CreatedAt time.Time      `json:"created_at"`
+    UpdatedAt time.Time      `json:"updated_at"`
+    DeletedAt gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty"` // nếu muốn soft delete
 }
 
 type Scripts struct {
@@ -27,6 +34,9 @@ type Scripts struct {
 	FileName   string `json:"file_name"`
 	Description string `json:"description"`
 	Param      pq.StringArray  `gorm:"type:text[]" json:"param"`
+	CreatedAt time.Time      `json:"created_at"`
+    UpdatedAt time.Time      `json:"updated_at"`
+    DeletedAt gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty"` // nếu muốn soft delete
 }
 
 type Logs struct {
@@ -35,6 +45,9 @@ type Logs struct {
 	Logs     string `json:"logs"`
 	Status   string `json:"status"`
 	Message  string `json:"message"`
+	CreatedAt time.Time      `json:"created_at"`
+    UpdatedAt time.Time      `json:"updated_at"`
+    DeletedAt gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty"` // nếu muốn soft delete
 }
 
 func AutoMigrate(db *gorm.DB) {
