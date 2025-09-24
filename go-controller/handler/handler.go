@@ -134,17 +134,26 @@ func HandleFunc(tag string, payload map[string]interface{}) (gin.H, int) {
 			hasError = true
 		}
 		results = append(results, gin.H{
-			"runner_id": runnerID,
 			"msg_id": msgID,
-			"result": result,
-			"status_code": statusCode,
+			"runner_id": runnerID,
+			// "result": result,
+			"log": result["log"],
+			// "status_code": statusCode,
 		})
 	}
 	response := gin.H{
-		"message": fmt.Sprintf("✅ Đã gửi đến %d runner", len(runnerIDs)),
-		"results": results,
+		// "message": fmt.Sprintf("✅ Đã gửi đến %d runner", len(runnerIDs)),
+		"message": fmt.Sprintf("Successful"),
+		"data": results,
+		"status": 200,
 	}
 	if hasError {
+		// return response, 422
+		response = gin.H{
+			"message": fmt.Sprintf("Unsuccessful"),
+			"data": []interface{}{},
+			"status": 422,
+		}
 		return response, 422
 	}
 	return response, 207

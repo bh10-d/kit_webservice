@@ -12,12 +12,15 @@ import (
 
 // os.Getenv("HOST_QUEUE")
 // var HOST_QUEUE = "10.24.191.38"
-var HOST_QUEUE = os.Getenv("HOST_QUEUE")
-var HOST_QUEUE_PORT = os.Getenv("HOST_QUEUE_PORT")
+// var HOST_QUEUE string = os.Getenv("HOST_QUEUE")
+// var HOST_QUEUE_PORT string = os.Getenv("HOST_QUEUE_PORT")
+
 func Dial() (*amqp.Connection, error) {
 	// return amqp.Dial("amqp://guest:guest@" + HOST_QUEUE + ":`HOST_QUEUE_PORT`/")
 	host := os.Getenv("HOST_QUEUE")
     port := os.Getenv("HOST_QUEUE_PORT")
+	// fmt.Println(HOST_QUEUE, HOST_QUEUE_PORT)
+	// return amqp.Dial(fmt.Sprintf("amqp://user:password@%s:%s/", HOST_QUEUE, HOST_QUEUE_PORT))
 	return amqp.Dial(fmt.Sprintf("amqp://user:password@%s:%s/", host, port))
 }
 
