@@ -4,6 +4,7 @@ package main
 import (
 	"os"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-contrib/cors"
 	"go-controller/db"
 	"go-controller/handler"
 	"go-controller/model"
@@ -20,6 +21,7 @@ func main() {
 	}
 	db.InitDB()
 	r := gin.Default()
+	r.Use(cors.Default())
 
 	r.POST("/get-scripts", func(c *gin.Context) {
 		var payload map[string]interface{}
@@ -151,6 +153,15 @@ func main() {
 		c.JSON(201, gin.H{
 			"message": "Runner đăng ký thành công",
 			"runner": runner,
+		})
+	})
+
+	r.GET("/get-jobs", func (c *gin.Context) {
+		var jobs []model.Job
+		// db.DB.Order("created_at desc").Limit(100).Find(&jobs)
+		db.DB.Order("id desc").Limit(100).Find(&jobs)
+		c.JSON(200, gin.H{
+			"jobs": jobs,
 		})
 	})
 
