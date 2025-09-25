@@ -1,24 +1,29 @@
-// package dto
-
-// import "go-controller/model"
-
 package dto
 
 import "go-controller/model"
 
-// SiteRequest represents the common request payload for site operations
+// ScriptExecutionRequest represents a generic request for executing scripts
+type ScriptExecutionRequest struct {
+	ScriptID   string                 `json:"scriptId" binding:"required" example:"script-001"`
+	Parameters map[string]interface{} `json:"parameters" binding:"required" example:"{\"subDomain\":\"example\"}"`
+	Tag        string                 `json:"tag,omitempty" example:"nginx"`
+} // @name ScriptExecutionRequest
+
+// SiteOperationRequest represents request for site-specific operations
+type SiteOperationRequest struct {
+	SubDomain string `json:"subDomain" binding:"required" example:"example"`
+	ScriptID  string `json:"scriptId" binding:"required" example:"check-site-script"`
+	Tag       string `json:"tag,omitempty" example:"nginx"`
+} // @name SiteOperationRequest
+
+// Legacy DTOs for backward compatibility
 type SiteRequest struct {
 	SubDomain string `json:"subDomain" binding:"required" example:"example"`
 	Tag       string `json:"tag,omitempty" example:"nginx"`
 } // @name SiteRequest
 
-// CheckSiteRequest represents the request payload for checking a site
 type CheckSiteRequest = SiteRequest // @name CheckSiteRequest
-
-// CreateSiteRequest represents the request payload for creating a site
-type CreateSiteRequest = SiteRequest // @name CreateSiteRequest
-
-// RemoveSiteRequest represents the request payload for removing a site
+type CreateSiteRequest = SiteRequest // @name CreateSiteRequest  
 type RemoveSiteRequest = SiteRequest // @name RemoveSiteRequest
 
 // UpdateSiteRequest represents the request payload for updating a site
@@ -37,8 +42,22 @@ type RegisterRequest struct {
 
 // ScriptsResponse represents the response for getting scripts
 type ScriptsResponse struct {
-	Scripts []string `json:"scripts" example:"check_site.sh,create_site.sh,remove_site.sh"`
+	Scripts []model.Scripts `json:"scripts"`
 } // @name ScriptsResponse
+
+// ScriptDetailResponse represents detailed script information
+type ScriptDetailResponse struct {
+	Script      model.Scripts            `json:"script"`
+	Parameters  []ScriptParameterInfo    `json:"parameters"`
+} // @name ScriptDetailResponse
+
+// ScriptParameterInfo represents information about script parameters
+type ScriptParameterInfo struct {
+	Name        string `json:"name" example:"subDomain"`
+	Type        string `json:"type" example:"string"`
+	Required    bool   `json:"required" example:"true"`
+	Description string `json:"description" example:"The subdomain name"`
+} // @name ScriptParameterInfo
 
 // ApiResponse represents a generic API response
 type ApiResponse struct {

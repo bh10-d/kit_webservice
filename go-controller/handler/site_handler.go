@@ -7,6 +7,7 @@ import (
 	"go-controller/db"
 	"go-controller/dto"
 	"go-controller/model"
+	"go-controller/service"
 )
 
 
@@ -22,54 +23,115 @@ import (
 // 	})
 // }
 
-// CheckSite handles POST /check-site
+var scriptService = service.NewScriptService()
+
+// ExecuteScript handles POST /execute-script - Generic script execution endpoint
+func ExecuteScript(c *gin.Context) {
+	var req dto.ScriptExecutionRequest
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(400, dto.ErrorResponse{Error: "Invalid JSON payload or missing required fields"})
+		return
+	}
+
+	tag := req.Tag
+	if tag == "" {
+		tag = "nginx"
+	}
+
+	payload, err := scriptService.BuildScriptPayload(req.ScriptID, req.Parameters)
+	if err != nil {
+		c.JSON(400, dto.ErrorResponse{Error: "Script error: " + err.Error()})
+		return
+	}
+
+	fmt.Printf("Executing script %s with payload: %+v\n", req.ScriptID, payload)
+	result, status := HandleFunc(tag, payload)
+	c.JSON(status, result)
+}
+
+// CheckSite handles POST /check-site - Legacy endpoint
 func CheckSite(c *gin.Context) {
 	var req dto.CheckSiteRequest
 	if err := c.BindJSON(&req); err != nil {
 		c.JSON(400, dto.ErrorResponse{Error: "Invalid JSON payload or missing required fields"})
 		return
 	}
-	
-	payload := map[string]interface{}{
-		"subDomain": req.SubDomain,
-		"script":    "check_site.sh",
+
+	// Convert to script execution request
+	scriptReq, err := scriptService.ConvertSiteRequestToScriptRequest(req, "check")
+	if err != nil {
+		c.JSON(400, dto.ErrorResponse{Error: "Conversion error: " + err.Error()})
+		return
 	}
-	
-	tag := req.Tag
-	if tag == "" { 
-		tag = "nginx" 
+
+	// ✅ Check status của script trong DB
+	var script model.Scripts
+	if err := db.DB.First(&script, "script_id = ?", scriptReq.ScriptID).Error; err != nil {
+		c.JSON(400, dto.ErrorResponse{Error: "Script not found: " + scriptReq.ScriptID})
+		return
 	}
-	
-	fmt.Println(payload)
+	if script.Status != true {
+		c.JSON(400, dto.ErrorResponse{Error: "Service is not active: " + scriptReq.ScriptID})
+		return
+	}
+
+	tag := scriptReq.Tag
+	if tag == "" {
+		tag = "nginx"
+	}
+
+	payload, err := scriptService.BuildScriptPayload(scriptReq.ScriptID, scriptReq.Parameters)
+	if err != nil {
+		c.JSON(400, dto.ErrorResponse{Error: "Script error: " + err.Error()})
+		return
+	}
+
+	fmt.Printf("Checking site with payload: %+v\n", payload)
 	result, status := HandleFunc(tag, payload)
 	c.JSON(status, result)
 }
 
-// CreateSite handles POST /create-site
+// CreateSite handles POST /create-site - Legacy endpoint
 func CreateSite(c *gin.Context) {
 	var req dto.CreateSiteRequest
 	if err := c.BindJSON(&req); err != nil {
 		c.JSON(400, dto.ErrorResponse{Error: "Invalid JSON payload or missing required fields"})
 		return
 	}
-	
+
 	tag := req.Tag
-	if tag == "" { 
-		tag = "nginx" 
+	if tag == "" {
+		tag = "nginx"
 	}
-	
-	// First check if site exists
-	checkPayload := map[string]interface{}{
-		"subDomain": req.SubDomain,
-		"script":    "check_site.sh",
+
+	// First check if site exists using script service
+	checkReq, err := scriptService.ConvertSiteRequestToScriptRequest(req, "check")
+	if err != nil {
+		c.JSON(400, dto.ErrorResponse{Error: "Conversion error: " + err.Error()})
+		return
 	}
+
+	checkPayload, err := scriptService.BuildScriptPayload(checkReq.ScriptID, checkReq.Parameters)
+	if err != nil {
+		c.JSON(400, dto.ErrorResponse{Error: "Script error: " + err.Error()})
+		return
+	}
+
 	checkResp, checkStatus := HandleFunc(tag, checkPayload)
 	if checkStatus == 200 {
-		// Site already exists, proceed with creation
-		createPayload := map[string]interface{}{
-			"subDomain": req.SubDomain,
-			"script":    "create_site.sh",
+		// Site check successful, proceed with creation
+		createReq, err := scriptService.ConvertSiteRequestToScriptRequest(req, "create")
+		if err != nil {
+			c.JSON(400, dto.ErrorResponse{Error: "Conversion error: " + err.Error()})
+			return
 		}
+
+		createPayload, err := scriptService.BuildScriptPayload(createReq.ScriptID, createReq.Parameters)
+		if err != nil {
+			c.JSON(400, dto.ErrorResponse{Error: "Script error: " + err.Error()})
+			return
+		}
+
 		result, status := HandleFunc(tag, createPayload)
 		c.JSON(status, result)
 	} else {

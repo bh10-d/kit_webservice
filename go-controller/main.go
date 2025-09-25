@@ -9,6 +9,7 @@ import (
 	"github.com/joho/godotenv"
 	"go-controller/db"
 	"go-controller/routes"
+	// "go-controller/service"
 )
 
 func main() {
@@ -19,6 +20,14 @@ func main() {
 	
 	// Initialize database
 	db.InitDB()
+	
+	// // Initialize default scripts
+	// scriptService := service.NewScriptService()
+	// if err := scriptService.InitializeDefaultScripts(); err != nil {
+	// 	log.Printf("⚠️ Failed to initialize default scripts: %v", err)
+	// } else {
+	// 	log.Println("✅ Default scripts initialized successfully")
+	// }
 	
 	// Initialize Gin router
 	r := gin.Default()
