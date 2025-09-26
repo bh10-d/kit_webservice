@@ -43,7 +43,7 @@ func FetchTags(tag string) []string {
 	return matchingIDs
 }
 
-func RunJob(runnerID string, payload map[string]interface{}, msgID string) (map[string]interface{}, int) {
+func RunJob(runnerID string, payload map[string]interface{}, msgID string, baseJobID string) (map[string]interface{}, int) {
 	responseQueue := msgID + "_response"
 	conn, err := rabbitmq.Dial()
 	if err != nil {
@@ -88,7 +88,7 @@ func RunJob(runnerID string, payload map[string]interface{}, msgID string) (map[
 	if response != nil {
 		job := model.Job{
 			RunnerID: runnerID,
-			MsgID: msgID,
+			MsgID: baseJobID, // Lưu base job ID thay vì msgID có suffix
 			Status: fmt.Sprintf("%v", response["status"]),
 			RequestPayload: toJSON(payload),
 			ResponsePayload: toJSON(response),
@@ -104,7 +104,7 @@ func RunJob(runnerID string, payload map[string]interface{}, msgID string) (map[
 	} else {
 		job := model.Job{
 			RunnerID: runnerID,
-			MsgID: msgID,
+			MsgID: baseJobID, // Lưu base job ID thay vì msgID có suffix
 			Status: "timeout",
 			RequestPayload: toJSON(payload),
 			Timeout: true,
@@ -124,34 +124,47 @@ func HandleFunc(tag string, payload map[string]interface{}) (gin.H, int) {
 	if len(runnerIDs) == 0 {
 		return gin.H{"error": fmt.Sprintf("No runner found with tag '%s'", tag)}, 404
 	}
+	
+	// Generate một base job ID cho tất cả runners trong cùng request này
+	baseJobID := GenerateKey()
+	fmt.Printf("Base Job ID: %s for %d runners\n", baseJobID, len(runnerIDs))
+	
 	results := []gin.H{}
 	hasError := false
-	for _, runnerID := range runnerIDs {
-		msgID := rabbitmq.SendToQueue(runnerID, payload)
-		result, statusCode := RunJob(runnerID, payload, msgID)
+	
+	for i, runnerID := range runnerIDs {
+		// Tạo msgID duy nhất cho mỗi runner: baseJobID + "_" + index
+		msgID := fmt.Sprintf("%s_%d", baseJobID, i+1)
+		
+		// Gửi message với msgID riêng biệt
+		actualMsgID := rabbitmq.SendToQueueWithCustomID(runnerID, payload, msgID)
+		result, statusCode := RunJob(runnerID, payload, actualMsgID, baseJobID)
+		
 		if statusCode >= 400 {
 			hasError = true
 		}
+		
 		results = append(results, gin.H{
-			"msg_id": msgID,
+			"job_id":    baseJobID,        // Trả về job ID gốc
+			"msg_id":    actualMsgID,      // Message ID thực tế (có suffix)
 			"runner_id": runnerID,
-			// "result": result,
-			"log": result["log"],
-			// "status_code": statusCode,
+			"log":       result["log"],
 		})
 	}
+	
 	response := gin.H{
-		// "message": fmt.Sprintf("✅ Đã gửi đến %d runner", len(runnerIDs)),
-		"message": fmt.Sprintf("Successful"),
-		"data": results,
-		"status": 200,
+		"message": "Successful",
+		"job_id":  baseJobID,  // Trả về job ID gốc
+		"data":    results,
+		"status":  200,
 	}
+	
 	if hasError {
-		// return response, 422
 		response = gin.H{
-			"message": fmt.Sprintf("Unsuccessful"),
-			"data": []interface{}{},
-			"status": 422,
+			"message": "Unsuccessful", 
+			"job_id":  baseJobID,
+			"data":    []interface{}{},
+			"status":  422,
 		}
 		return response, 422
 	}

@@ -28,6 +28,7 @@ func SetupRoutes(r *gin.Engine) {
 	
 	// Management routes
 	r.GET("/get-jobs", handler.GetJobs)
+	r.GET("/jobs/:baseJobId", handler.GetJobGroup)  // New: Get jobs by base job ID
 	r.GET("/get-runners", handler.GetRunners)
 	r.GET("/get-scripts", handler.GetScripts) // Legacy endpoint
 	r.GET("/get-logs", handler.GetLogs)

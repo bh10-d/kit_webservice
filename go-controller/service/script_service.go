@@ -3,6 +3,7 @@ package service
 import (
 	// "encoding/json"
 	"errors"
+	// "github.com/google/uuid"
 	"go-controller/db"
 	"go-controller/dto"
 	"go-controller/model"
@@ -147,28 +148,43 @@ func (s *ScriptService) GetScriptParameters(scriptID string) ([]dto.ScriptParame
 // }
 
 // ConvertLegacyRequest converts old-style requests to script execution requests
-func (s *ScriptService) ConvertSiteRequestToScriptRequest(req dto.SiteRequest, operation string) (*dto.ScriptExecutionRequest, error) {
-	var scriptID string
+// func (s *ScriptService) ConvertSiteRequestToScriptRequest(req dto.SiteRequest, operation string) (*dto.ScriptExecutionRequest, error) {
+// 	var scriptID string
 	
-	switch operation {
-	case "check":
-		scriptID = "check-site"
-	case "create":
-		scriptID = "create-site" 
-	case "remove":
-		scriptID = "remove-site"
-	default:
-		return nil, errors.New("unsupported operation: " + operation)
-	}
+// 	switch operation {
+// 	case "check":
+// 		scriptID = "check-site"
+// 	case "create":
+// 		scriptID = "create-site" 
+// 	case "remove":
+// 		scriptID = "remove-site"
+// 	default:
+// 		return nil, errors.New("unsupported operation: " + operation)
+// 	}
 
+// 	parameters := map[string]interface{}{
+// 		"subDomain": req.SubDomain,
+// 	}
+
+// 	return &dto.ScriptExecutionRequest{
+// 		ScriptID:   scriptID,
+// 		Parameters: parameters,
+// 		Tag:        req.Tag,
+// 	}, nil
+// }
+
+
+func (s *ScriptService) ConvertSiteRequestToScriptRequest(req dto.SiteRequest, operation string) (*dto.ScriptExecutionRequest, error) {
 	parameters := map[string]interface{}{
 		"subDomain": req.SubDomain,
 	}
 
 	return &dto.ScriptExecutionRequest{
-		ScriptID:   scriptID,
+		ScriptID:   req.ScriptID, // ✅ giữ nguyên int từ DTO
+		// ScriptID:   uuid.New().String(), // ✅ giữ nguyên int từ DTO
 		Parameters: parameters,
 		Tag:        req.Tag,
+		// Operation:  operation,   // gắn thêm nếu muốn phân biệt
 	}, nil
 }
 

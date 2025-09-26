@@ -25,21 +25,28 @@ func Dial() (*amqp.Connection, error) {
 }
 
 func SendToQueue(runnerID string, data map[string]interface{}) string {
-	// conn, err := amqp.Dial("amqp://guest:guest@" + HOST_QUEUE + ":5672/")
+	msgID := uuid.New().String()
+	return SendToQueueWithCustomID(runnerID, data, msgID)
+}
+
+// SendToQueueWithCustomID allows sending with a custom message ID
+func SendToQueueWithCustomID(runnerID string, data map[string]interface{}, customMsgID string) string {
 	host := os.Getenv("HOST_QUEUE")
-    port := os.Getenv("HOST_QUEUE_PORT")
+	port := os.Getenv("HOST_QUEUE_PORT")
 	conn, err := amqp.Dial(fmt.Sprintf("amqp://user:password@%s:%s/", host, port))
 	if err != nil {
 		log.Printf("Failed to connect to RabbitMQ: %v", err)
 		return ""
 	}
 	defer conn.Close()
+	
 	ch, err := conn.Channel()
 	if err != nil {
 		log.Printf("Failed to open a channel: %v", err)
 		return ""
 	}
 	defer ch.Close()
+	
 	_, err = ch.QueueDeclare(
 		runnerID,
 		true,
@@ -52,10 +59,12 @@ func SendToQueue(runnerID string, data map[string]interface{}) string {
 		log.Printf("Failed to declare queue: %v", err)
 		return ""
 	}
-	msgID := uuid.New().String()
-	data["id"] = msgID
+	
+	// Sử dụng custom message ID thay vì generate mới
+	data["id"] = customMsgID
 	data["reply_to"] = runnerID
 	body, _ := json.Marshal(data)
+	
 	err = ch.Publish(
 		"",
 		runnerID,
@@ -68,6 +77,9 @@ func SendToQueue(runnerID string, data map[string]interface{}) string {
 	)
 	if err != nil {
 		log.Printf("Failed to publish message: %v", err)
+		return ""
 	}
-	return msgID
+	
+	log.Printf("Sent message to runner %s with ID: %s", runnerID, customMsgID)
+	return customMsgID
 }

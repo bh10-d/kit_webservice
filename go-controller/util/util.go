@@ -6,7 +6,12 @@ import (
 	// "compress/gzip"
 	// "fmt"
 	// "bytes"
+	"go-controller/db"
+	// "go-controller/dto"
+	"go-controller/model"
 	"os"
+	// "fmt"
+	"errors"
 )
 
 func SplitTags(tags string) []string {
@@ -88,3 +93,21 @@ func ListScripts() [] string {
 // 	}
 // 	return nil
 // }
+
+
+
+
+func CheckStatus (scriptID string) error {
+	// fmt.Printf("Checking status for script ID: %s\n", scriptID)
+	var script model.Scripts
+	if err := db.DB.First(&script, "script_id = ?", scriptID).Error; err != nil {
+		// return errors.New("Service not found")
+		return errors.New(scriptID)
+	}
+	
+	if !script.Status {
+		return errors.New("Service is not active")
+
+	}
+	return nil
+}

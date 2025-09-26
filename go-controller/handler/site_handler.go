@@ -8,6 +8,7 @@ import (
 	"go-controller/dto"
 	"go-controller/model"
 	"go-controller/service"
+	"go-controller/util"
 )
 
 
@@ -64,14 +65,17 @@ func CheckSite(c *gin.Context) {
 		return
 	}
 
-	// ✅ Check status của script trong DB
-	var script model.Scripts
-	if err := db.DB.First(&script, "script_id = ?", scriptReq.ScriptID).Error; err != nil {
-		c.JSON(400, dto.ErrorResponse{Error: "Script not found: " + scriptReq.ScriptID})
-		return
-	}
-	if script.Status != true {
-		c.JSON(400, dto.ErrorResponse{Error: "Service is not active: " + scriptReq.ScriptID})
+
+	// if err := util.CheckStatus(req.ScriptID); err != nil {
+	// 	c.JSON(400, dto.ErrorResponse{Error: err.Error()})
+	// 	return
+	// }
+
+	// ✅ Check status trong DB
+	fmt.Printf("Checking status for script ID: %s\n", scriptReq.ScriptID)
+	if err := util.CheckStatus(scriptReq.ScriptID); err != nil {
+		// fmt.Println("Error checking script status:", scriptReq.ScriptID, err)
+		c.JSON(400, dto.ErrorResponse{Error: scriptReq.ScriptID + ": " + err.Error()})
 		return
 	}
 

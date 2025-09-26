@@ -90,6 +90,28 @@ func GetLogs(c *gin.Context) {
 	c.JSON(200, response)
 }
 
+// GetJobGroup handles GET /jobs/:baseJobId - Get all jobs for a base job ID
+func GetJobGroup(c *gin.Context) {
+	baseJobID := c.Param("baseJobId")
+	if baseJobID == "" {
+		c.JSON(400, dto.ErrorResponse{Error: "Base Job ID is required"})
+		return
+	}
+
+	summary, err := model.GetJobGroupSummary(db.DB, baseJobID)
+	if err != nil {
+		c.JSON(500, dto.ErrorResponse{Error: "Failed to get job group: " + err.Error()})
+		return
+	}
+
+	response := dto.ApiResponse{
+		Status:  200,
+		Message: "Job group retrieved successfully",
+		Data:    summary,
+	}
+	c.JSON(200, response)
+}
+
 
 
 

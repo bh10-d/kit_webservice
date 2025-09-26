@@ -4,7 +4,7 @@ import "go-controller/model"
 
 // ScriptExecutionRequest represents a generic request for executing scripts
 type ScriptExecutionRequest struct {
-	ScriptID   string                 `json:"scriptId" binding:"required" example:"script-001"`
+	ScriptID   string                 `json:"scriptId" example:"550e8400-e29b-41d4-a716-446655440000"`
 	Parameters map[string]interface{} `json:"parameters" binding:"required" example:"{\"subDomain\":\"example\"}"`
 	Tag        string                 `json:"tag,omitempty" example:"nginx"`
 } // @name ScriptExecutionRequest
@@ -20,6 +20,7 @@ type SiteOperationRequest struct {
 type SiteRequest struct {
 	SubDomain string `json:"subDomain" binding:"required" example:"example"`
 	Tag       string `json:"tag,omitempty" example:"nginx"`
+	ScriptID  string    `json:"script_id" binding:"required" example:"1"`
 } // @name SiteRequest
 
 type CheckSiteRequest = SiteRequest // @name CheckSiteRequest
