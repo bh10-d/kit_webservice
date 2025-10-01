@@ -36,6 +36,8 @@ type Scripts struct {
 	Description string `json:"description"`
 	Param      pq.StringArray  `gorm:"type:text[]" json:"param"`
 	Status	 bool `json:"status"`
+	Tag 	  pq.StringArray  `gorm:"type:text[]" json:"tag"` // Mảng các tag
+	Runner        pq.StringArray  `gorm:"type:text[]" json:"runner"`  // Mảng các VM
 	CreatedAt time.Time      `json:"created_at"`
     UpdatedAt time.Time      `json:"updated_at"`
     // DeletedAt gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty"` // nếu muốn soft delete

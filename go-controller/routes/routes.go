@@ -14,8 +14,9 @@ func SetupRoutes(r *gin.Engine) {
 	r.GET("/scripts", handler.GetScripts)
 	r.GET("/scripts/:id", handler.GetScriptDetail)
 	r.POST("/scripts", handler.CreateScript)
-	// r.PUT("/scripts/:id", handler.UpdateScript)
-	// r.DELETE("/scripts/:id", handler.DeleteScript)
+	r.PUT("/scripts/:id", handler.UpdateScript)
+	r.PUT("/scripts/status/:id", handler.UpdateScriptStatus)
+	r.DELETE("/scripts/:id", handler.DeleteScript)
 	
 	// Legacy site management routes (for backward compatibility)
 	r.POST("/check-site", handler.CheckSite)

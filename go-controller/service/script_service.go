@@ -3,10 +3,12 @@ package service
 import (
 	// "encoding/json"
 	"errors"
+	"fmt"
 	// "github.com/google/uuid"
 	"go-controller/db"
 	"go-controller/dto"
 	"go-controller/model"
+	// "fmt"
 )
 
 // ScriptService handles script-related operations
@@ -190,5 +192,49 @@ func (s *ScriptService) ConvertSiteRequestToScriptRequest(req dto.SiteRequest, o
 
 
 func (s *ScriptService) CreateScript(script *model.Scripts) error {
+	// Đảm bảo arrays được khởi tạo đúng cách
+	if script.Param == nil {
+		script.Param = make([]string, 0)
+	}
+	if script.Tag == nil {
+		script.Tag = make([]string, 0)
+	}
+	if script.Runner == nil {
+		script.Runner = make([]string, 0)
+	}
+	
 	return db.DB.Create(script).Error
+}
+
+
+func (s *ScriptService) UpdateScript(script *model.Scripts) error {
+	fmt.Printf("UpdateScript - ID: %s\n", script.ScriptID)
+	fmt.Printf("UpdateScript - Param: %v\n", script.Param)
+	fmt.Printf("UpdateScript - Tag: %v\n", script.Tag)
+	fmt.Printf("UpdateScript - Runner: %v\n", script.Runner)
+	
+	// Sử dụng Updates() thay vì Save() để xử lý PostgreSQL arrays đúng cách
+	result := db.DB.Model(&model.Scripts{}).Where("script_id = ?", script.ScriptID).Updates(map[string]interface{}{
+		"file_name":   script.FileName,
+		"description": script.Description,
+		"param":       script.Param,
+		"status":      script.Status,
+		"tag":         script.Tag,
+		"runner":      script.Runner,
+	})
+	
+	fmt.Printf("UpdateScript - Affected rows: %d\n", result.RowsAffected)
+	if result.Error != nil {
+		fmt.Printf("UpdateScript - Error: %v\n", result.Error)
+	}
+	
+	return result.Error
+}
+
+func (s *ScriptService) UpdateScriptStatus(script *model.Scripts) error {
+	return db.DB.Model(&model.Scripts{}).Where("script_id = ?", script.ScriptID).Update("status", script.Status).Error
+}
+
+func (s *ScriptService) DeleteScript(scriptID string) error {
+	return db.DB.Where("script_id = ?", scriptID).Delete(&model.Scripts{}).Error
 }

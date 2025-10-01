@@ -137,7 +137,110 @@ func CreateScript (c *gin.Context) {
 	}
 	c.JSON(201, response)
 }
-// func UpdateScript (c *gin.Context) {}
+func UpdateScript (c *gin.Context) {
+	var script model.Scripts
+	id := c.Param("id")
+	
+	script.ScriptID = id
+	// fmt.Println("Update ID from Param:", id)
+
+	if err := c.ShouldBindJSON(&script); err != nil {
+		fmt.Printf("Binding error: %v\n", err)
+		c.JSON(400, dto.ErrorResponse{Error: "Invalid request payload"})
+		return
+	}
+
+	// Debug: In ra dữ liệu nhận được
+	fmt.Printf("Received script data: %+v\n", script)
+	fmt.Printf("Param array: %v\n", script.Param)
+	fmt.Printf("Tag array: %v\n", script.Tag)
+	fmt.Printf("Runner array: %v\n", script.Runner)
+
+	if err := manageScriptService.UpdateScript(&script); err != nil {
+		fmt.Printf("Update error: %v\n", err)
+		c.JSON(500, dto.ErrorResponse{Error: "Failed to update script: " + err.Error()})
+		return
+	}
+
+	// Đọc lại từ database để kiểm tra
+	updatedScript, err := manageScriptService.GetScriptByID(id)
+	if err != nil {
+		fmt.Printf("Error getting updated script: %v\n", err)
+	} else {
+		fmt.Printf("Updated script from DB: %+v\n", *updatedScript)
+	}
+
+	response := dto.ApiResponse{
+		Status:  200,
+		Message: "Script updated successfully",
+		Data:    map[string]interface{}{
+			"script":     updatedScript,
+			"parameters": nil,
+		},
+	}
+	c.JSON(200, response)
+}
+
+
+func UpdateScriptStatus (c *gin.Context) {
+	// var script model.Scripts
+	// if err := c.ShouldBindJSON(&script); err != nil {
+	// 	c.JSON(400, dto.ErrorResponse{Error: "Invalid request payload"})
+	// 	return
+	// }
+
+	// if err := manageScriptService.UpdateScriptStatus(&script); err != nil {
+	// 	c.JSON(500, dto.ErrorResponse{Error: "Failed to update script status: " + err.Error()})
+	// 	return
+	// }
+
+	id := c.Param("id")
+	if id == "" {
+		c.JSON(400, dto.ErrorResponse{Error: "Script ID is required"})
+		return
+	}
+
+	if err := manageScriptService.UpdateScriptStatus(&model.Scripts{ScriptID: id, Status: true}); err != nil {
+		c.JSON(500, dto.ErrorResponse{Error: "Failed to update script status: " + err.Error()})
+		return
+	}
+
+	response := dto.ApiResponse{
+		Status:  200,
+		Message: "Script status updated successfully",
+	}
+	c.JSON(200, response)
+}
+
+func DeleteScript (c *gin.Context) {
+	// var script model.Scripts
+	// if err := c.ShouldBindJSON(&script); err != nil {
+	// 	c.JSON(400, dto.ErrorResponse{Error: "Invalid request payload"})
+	// 	return
+	// }
+
+	// if err := manageScriptService.DeleteScript(script.ScriptID); err != nil {
+	// 	c.JSON(500, dto.ErrorResponse{Error: "Failed to delete script: " + err.Error()})
+	// 	return
+	// }
+
+	id := c.Param("id")
+	if id == "" {
+		c.JSON(400, dto.ErrorResponse{Error: "Script ID is required"})
+		return
+	}
+	if err := manageScriptService.DeleteScript(id); err != nil {
+		c.JSON(500, dto.ErrorResponse{Error: "Failed to delete script: " + err.Error()})
+		return
+	}
+	
+	response := dto.ApiResponse{
+		Status:  200,
+		Message: "Script status deleted successfully",
+	}
+	c.JSON(200, response)
+}
+
 // func DeleteScript (c *gin.Context) {
 // 	var script model.Scripts
 // 	if err := c.ShouldBindJSON(&script); err != nil {
