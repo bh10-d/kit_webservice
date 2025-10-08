@@ -11,6 +11,7 @@ type Runner struct {
 	ID   string `gorm:"primaryKey" json:"id"`
 	HostName string `json:"hostname"`
 	IP   string `json:"ip"`
+    Alive bool `json:"alive"` // "true" or "false"
 	Tags string `json:"tags"`
 	CreatedAt time.Time      `json:"created_at"`
     UpdatedAt time.Time      `json:"updated_at"`

@@ -27,6 +27,10 @@ func SetupRoutes(r *gin.Engine) {
 	// Runner management routes
 	r.POST("/register", handler.RegisterRunner)
 	
+	// Health check routes
+	// r.GET("/health", handler.HealthCheck)           // Check all runners health
+	r.GET("/health/:id", handler.TestRunnerHealth)  // Check specific runner health
+	
 	// Management routes
 	r.GET("/get-jobs", handler.GetJobs)
 	r.GET("/jobs/:baseJobId", handler.GetJobGroup)  // New: Get jobs by base job ID
