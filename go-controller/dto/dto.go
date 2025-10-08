@@ -85,3 +85,25 @@ type RegisterResponse struct {
 type ErrorResponse struct {
 	Error string `json:"error" example:"Missing JSON payload"`
 } // @name ErrorResponse
+
+
+// type HealthCheckResponse struct {
+// 	runner_id   string
+// 	response_id string
+// 	alive       bool
+// 	error       bool
+// 	response_time int
+// 	payload     interface{}
+// 	status      string
+// }
+
+
+type HealthCheckResponse struct {
+	RunnerID     string      `json:"runner_id"`
+	ResponseID   string      `json:"response_id"`
+	Alive        bool        `json:"alive"`
+	Error        string      `json:"error"`
+	ResponseTimeMs int      `json:"response_time_ms"`
+	Payload      interface{} `json:"payload"`
+	Status       string      `json:"status"`
+}

@@ -62,7 +62,8 @@ func SendToQueueWithCustomID(runnerID string, data map[string]interface{}, custo
 	
 	// Sử dụng custom message ID thay vì generate mới
 	data["id"] = customMsgID
-	data["reply_to"] = runnerID
+	// data["reply_to"] = runnerID
+	data["send_to"] = runnerID
 	body, _ := json.Marshal(data)
 	
 	err = ch.Publish(
@@ -80,6 +81,6 @@ func SendToQueueWithCustomID(runnerID string, data map[string]interface{}, custo
 		return ""
 	}
 	
-	log.Printf("Sent message to runner %s with ID: %s", runnerID, customMsgID)
+	// log.Printf("Sent message to runner %s with ID: %s", runnerID, customMsgID)
 	return customMsgID
 }

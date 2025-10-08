@@ -4,3 +4,4 @@ rabbitmq_data
 *.tar*
 *.zip*
 *.db
+backup*
