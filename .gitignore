@@ -3,4 +3,6 @@ rabbitmq_data
 .env
 *.tar*
 *.zip*
-*.db
+*.sh
+
+*.backup.*
