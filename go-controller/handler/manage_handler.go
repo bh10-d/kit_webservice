@@ -391,6 +391,7 @@ func testSingleRunner(runner model.Runner) dto.HealthCheckResponse {
 
 // TestRunnerHealth - Test health của một runner cụ thể
 func TestRunnerHealth(c *gin.Context) {
+	start := time.Now()
 	runnerID := c.Param("id")
 	if runnerID == "" {
 		c.JSON(400, dto.ErrorResponse{Error: "Runner ID is required"})
@@ -437,6 +438,7 @@ func TestRunnerHealth(c *gin.Context) {
 		statusCode = 200
 	}
 
+	result.ResponseTimeMs = int(time.Since(start).Milliseconds())
 
 	c.JSON(statusCode, dto.ApiResponse{
 		Status:  statusCode,

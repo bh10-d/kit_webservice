@@ -63,7 +63,7 @@ func RunJob(runnerID string, payload map[string]interface{}, msgID string, baseJ
 		return map[string]interface{}{ "error": "Queue declare failed" }, 500
 	}
 	waited := 0
-	timeout := 10
+	timeout := 5
 	var response map[string]interface{}
 	for waited < timeout {
 		msg, ok, err := ch.Get(responseQueue, true)
@@ -141,7 +141,7 @@ func HandleFunc(tag string, payload map[string]interface{}) (gin.H, int) {
 		result, statusCode := RunJob(runnerID, payload, actualMsgID, baseJobID)
 		
 		if statusCode >= 400 {
-			hasError = true
+			hasError = false
 		}
 		
 		results = append(results, gin.H{

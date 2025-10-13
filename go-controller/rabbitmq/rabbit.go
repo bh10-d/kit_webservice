@@ -59,7 +59,7 @@ func SendToQueueWithCustomID(runnerID string, data map[string]interface{}, custo
 		log.Printf("Failed to declare queue: %v", err)
 		return ""
 	}
-	
+	// fmt.Println("real data sent to queue:", data)
 	// Sử dụng custom message ID thay vì generate mới
 	data["id"] = customMsgID
 	// data["reply_to"] = runnerID

@@ -45,7 +45,7 @@ func ExecuteScript(c *gin.Context) {
 		return
 	}
 
-	fmt.Printf("Executing script %s with payload: %+v\n", req.ScriptID, payload)
+	// fmt.Printf("Executing script %s with payload: %+v\n", req.ScriptID, payload)
 	result, status := HandleFunc(tag, payload)
 	c.JSON(status, result)
 }

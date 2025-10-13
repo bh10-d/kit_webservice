@@ -57,15 +57,23 @@ func (s *ScriptService) BuildScriptPayload(scriptID string, parameters map[strin
 		"script": script.FileName,
 	}
 
+	tmpParameters := map[string]interface{}{}
+
 	// Add parameters to payload
 	for key, value := range parameters {
-		payload[key] = value
+		tmpParameters[key] = value
 	}
 
+	
+
 	// Validate required parameters
-	if err := s.validateParameters(script, parameters); err != nil {
+	if err := s.validateParameters(script, tmpParameters); err != nil {
 		return nil, err
 	}
+
+	payload["parameters"] = tmpParameters
+
+	// fmt.Println("Built payload:", payload)
 
 	return payload, nil
 }

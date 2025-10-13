@@ -9,6 +9,7 @@ import (
 func SetupRoutes(r *gin.Engine) {
 	// Generic script execution endpoint
 	r.POST("/execute-script", handler.ExecuteScript)
+	// r.POST("/execute-script/:id", handler.ExecuteScript)
 	
 	// Scripts management routes
 	r.GET("/scripts", handler.GetScripts)
