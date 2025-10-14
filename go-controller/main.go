@@ -7,8 +7,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-contrib/cors"
 	"github.com/joho/godotenv"
-	"go-controller/db"
-	"go-controller/routes"
+	"go-controller/internal/database"
+	"go-controller/internal/routes"
 	// "go-controller/service"
 )
 

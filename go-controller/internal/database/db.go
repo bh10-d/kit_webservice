@@ -5,7 +5,7 @@ import (
 	// "gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/driver/postgres"
-	"go-controller/model"
+	"go-controller/internal/model"
 	"os"
 	"fmt"
 )

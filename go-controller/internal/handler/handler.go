@@ -9,10 +9,10 @@ import (
 	"time"
 	"sync"
 	"github.com/gin-gonic/gin"
-	"go-controller/db"
-	"go-controller/model"
-	"go-controller/rabbitmq"
-	"go-controller/util"
+	"go-controller/internal/database"
+	"go-controller/internal/model"
+	"go-controller/internal/mq"
+	"go-controller/internal/util"
 )
 
 func GenerateKey() string {

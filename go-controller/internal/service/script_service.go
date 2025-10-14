@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 	// "github.com/google/uuid"
-	"go-controller/db"
-	"go-controller/dto"
-	"go-controller/model"
+	"go-controller/internal/database"
+	"go-controller/internal/dto"
+	"go-controller/internal/model"
 	// "fmt"
 )
 

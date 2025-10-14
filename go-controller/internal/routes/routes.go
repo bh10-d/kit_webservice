@@ -2,7 +2,7 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
-	"go-controller/handler"
+	"go-controller/internal/handler"
 )
 
 // SetupRoutes configures all routes for the application

@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	// "go-controller/util"
-	"go-controller/db"
-	"go-controller/dto"
-	"go-controller/model"
-	"go-controller/service"
-	"go-controller/util"
+	"go-controller/internal/database"
+	"go-controller/internal/dto"
+	"go-controller/internal/model"
+	"go-controller/internal/service"
+	"go-controller/internal/util"
 )
 
 
