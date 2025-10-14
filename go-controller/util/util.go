@@ -2,14 +2,16 @@ package util
 
 import (
 	"strings"
+	"math"
 	// "archive/tar"
 	// "compress/gzip"
 	// "fmt"
 	// "bytes"
 	"go-controller/db"
-	// "go-controller/dto"
+	"go-controller/dto"
 	"go-controller/model"
 	"os"
+	"gorm.io/gorm"
 	// "fmt"
 	"errors"
 )
@@ -110,4 +112,76 @@ func CheckStatus (scriptID string) error {
 
 	}
 	return nil
+}
+
+// GetPaginationDefaults returns default pagination values
+func GetPaginationDefaults(req dto.PaginationRequest) dto.PaginationRequest {
+	if req.Page <= 0 {
+		req.Page = 1
+	}
+	if req.PageSize <= 0 || req.PageSize > 100 {
+		req.PageSize = 10
+	}
+	if req.Sort == "" {
+		req.Sort = "id"
+	}
+	if req.Order == "" {
+		req.Order = "desc"
+	}
+	return req
+}
+
+// CalculatePaginationMeta calculates pagination metadata
+func CalculatePaginationMeta(page, pageSize int, total int64) dto.PaginationMeta {
+	totalPages := int(math.Ceil(float64(total) / float64(pageSize)))
+	
+	return dto.PaginationMeta{
+		Page:        page,
+		PageSize:    pageSize,
+		Total:       total,
+		TotalPages:  totalPages,
+		HasNext:     page < totalPages,
+		HasPrevious: page > 1,
+	}
+}
+
+// ApplyPagination applies pagination, sorting and searching to a GORM query
+func ApplyPagination(query *gorm.DB, req dto.PaginationRequest) *gorm.DB {
+	req = GetPaginationDefaults(req)
+	
+	// Apply sorting
+	orderClause := req.Sort + " " + req.Order
+	query = query.Order(orderClause)
+	
+	// Apply pagination
+	offset := (req.Page - 1) * req.PageSize
+	query = query.Offset(offset).Limit(req.PageSize)
+	
+	return query
+}
+
+// ApplySearch applies search filter to queries based on model type
+func ApplySearch(query *gorm.DB, search string, modelType string) *gorm.DB {
+	if search == "" {
+		return query
+	}
+	
+	searchPattern := "%" + search + "%"
+	
+	switch modelType {
+	case "job":
+		return query.Where("runner_id ILIKE ? OR msg_id ILIKE ? OR status ILIKE ?", 
+			searchPattern, searchPattern, searchPattern)
+	case "runner":
+		return query.Where("id ILIKE ? OR host_name ILIKE ? OR ip ILIKE ? OR tags ILIKE ?", 
+			searchPattern, searchPattern, searchPattern, searchPattern)
+	case "script":
+		return query.Where("script_id ILIKE ? OR file_name ILIKE ? OR description ILIKE ?", 
+			searchPattern, searchPattern, searchPattern)
+	case "log":
+		return query.Where("msg_id ILIKE ? OR runner_id ILIKE ? OR status ILIKE ? OR message ILIKE ?", 
+			searchPattern, searchPattern, searchPattern, searchPattern)
+	default:
+		return query
+	}
 }

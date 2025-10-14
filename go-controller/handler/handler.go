@@ -114,10 +114,10 @@ func RunJob(runnerID string, payload map[string]interface{}, msgID string, baseJ
 	}
 }
 
-func toJSON(v interface{}) string {
-	b, _ := json.Marshal(v)
-	return string(b)
-}
+// func toJSON(v interface{}) string {
+// 	b, _ := json.Marshal(v)
+// 	return string(b)
+// }
 
 func HandleFunc(tag string, payload map[string]interface{}) (gin.H, int) {
 	runnerIDs := FetchTags(tag)

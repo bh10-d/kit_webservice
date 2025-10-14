@@ -107,3 +107,30 @@ type HealthCheckResponse struct {
 	Payload      interface{} `json:"payload"`
 	Status       string      `json:"status"`
 }
+
+// PaginationRequest represents pagination parameters
+type PaginationRequest struct {
+	Page     int    `form:"page" json:"page" example:"1"`
+	PageSize int    `form:"page_size" json:"page_size" example:"10"`
+	Sort     string `form:"sort" json:"sort" example:"id"`
+	Order    string `form:"order" json:"order" example:"desc"`
+	Search   string `form:"search" json:"search" example:""`
+} // @name PaginationRequest
+
+// PaginationMeta represents pagination metadata
+type PaginationMeta struct {
+	Page         int   `json:"page" example:"1"`
+	PageSize     int   `json:"page_size" example:"10"`
+	Total        int64 `json:"total" example:"100"`
+	TotalPages   int   `json:"total_pages" example:"10"`
+	HasNext      bool  `json:"has_next" example:"true"`
+	HasPrevious  bool  `json:"has_previous" example:"false"`
+} // @name PaginationMeta
+
+// PaginatedResponse represents a paginated API response
+type PaginatedResponse struct {
+	Status     int            `json:"status" example:"200"`
+	Message    string         `json:"message" example:"Data retrieved successfully"`
+	Data       interface{}    `json:"data"`
+	Pagination PaginationMeta `json:"pagination"`
+} // @name PaginatedResponse

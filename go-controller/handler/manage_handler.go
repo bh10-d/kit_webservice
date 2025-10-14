@@ -6,7 +6,7 @@ import (
 	// "sync"
 	"time"
 	"github.com/gin-gonic/gin"
-	// "go-controller/util"
+	"go-controller/util"
 	"go-controller/db"
 	"go-controller/dto"
 	"go-controller/model"
@@ -17,40 +17,149 @@ import (
 
 var manageScriptService = service.NewScriptService()
 
-// GetJobs handles GET /get-jobs
+// Helper function to safely convert to JSON string
+func toJSON(v interface{}) string {
+	if v == nil {
+		return ""
+	}
+	bytes, err := json.Marshal(v)
+	if err != nil {
+		return fmt.Sprintf("%v", v)
+	}
+	return string(bytes)
+}
+
+// GetJobs handles GET /get-jobs with pagination
 func GetJobs(c *gin.Context) {
+	var req dto.PaginationRequest
+	if err := c.ShouldBindQuery(&req); err != nil {
+		c.JSON(400, dto.ErrorResponse{Error: "Invalid pagination parameters"})
+		return
+	}
+	
+	req = util.GetPaginationDefaults(req)
+	
+	var jobs []model.Job
+	var total int64
+	
+	// Base query
+	query := db.DB.Model(&model.Job{})
+	
+	// Apply search if provided
+	query = util.ApplySearch(query, req.Search, "job")
+	
+	// Count total records
+	query.Count(&total)
+	
+	// Apply pagination and get results
+	query = util.ApplyPagination(query, req)
+	query.Find(&jobs)
+	
+	pagination := util.CalculatePaginationMeta(req.Page, req.PageSize, total)
+	
+	response := dto.PaginatedResponse{
+		Status:     200,
+		Message:    "Jobs retrieved successfully",
+		Data:       jobs,
+		Pagination: pagination,
+	}
+	c.JSON(200, response)
+}
+
+// GetJobsOld handles GET /get-jobs-old (legacy endpoint without pagination)
+func GetJobsOld(c *gin.Context) {
 	var jobs []model.Job
 	db.DB.Order("id desc").Limit(100).Find(&jobs)
 	
 	response := dto.ApiResponse{
 		Status:  200,
-		Message: "Jobs retrieved successfully",
+		Message: "Jobs retrieved successfully (legacy)",
 		Data:    jobs,
 	}
 	c.JSON(200, response)
 }
 
 func GetRunners(c *gin.Context) {
+	var req dto.PaginationRequest
+	if err := c.ShouldBindQuery(&req); err != nil {
+		c.JSON(400, dto.ErrorResponse{Error: "Invalid pagination parameters"})
+		return
+	}
+	
+	req = util.GetPaginationDefaults(req)
+	
+	var runners []model.Runner
+	var total int64
+	
+	// Base query
+	query := db.DB.Model(&model.Runner{})
+	
+	// Apply search if provided
+	query = util.ApplySearch(query, req.Search, "runner")
+	
+	// Count total records
+	query.Count(&total)
+	
+	// Apply pagination and get results
+	query = util.ApplyPagination(query, req)
+	query.Find(&runners)
+	
+	pagination := util.CalculatePaginationMeta(req.Page, req.PageSize, total)
+	
+	response := dto.PaginatedResponse{
+		Status:     200,
+		Message:    "Runners retrieved successfully",
+		Data:       runners,
+		Pagination: pagination,
+	}
+	c.JSON(200, response)
+}
+
+// GetRunnersOld handles GET /get-runners-old (legacy endpoint without pagination)
+func GetRunnersOld(c *gin.Context) {
 	var runners []model.Runner
 	db.DB.Limit(100).Find(&runners)
 	
 	response := dto.ApiResponse{
 		Status:  200,
-		Message: "Runners retrieved successfully",
+		Message: "Runners retrieved successfully (legacy)",
 		Data:    runners,
 	}
 	c.JSON(200, response)
 }
 
 func GetScripts(c *gin.Context) {
-	scripts, err := manageScriptService.GetAllScripts()
-	if err != nil {
-		c.JSON(500, dto.ErrorResponse{Error: "Failed to fetch scripts: " + err.Error()})
+	var req dto.PaginationRequest
+	if err := c.ShouldBindQuery(&req); err != nil {
+		c.JSON(400, dto.ErrorResponse{Error: "Invalid pagination parameters"})
 		return
 	}
 	
-	response := dto.ScriptsResponse{
-		Scripts: scripts,
+	req = util.GetPaginationDefaults(req)
+	
+	var scripts []model.Scripts
+	var total int64
+	
+	// Base query
+	query := db.DB.Model(&model.Scripts{})
+	
+	// Apply search if provided
+	query = util.ApplySearch(query, req.Search, "script")
+	
+	// Count total records
+	query.Count(&total)
+	
+	// Apply pagination and get results
+	query = util.ApplyPagination(query, req)
+	query.Find(&scripts)
+	
+	pagination := util.CalculatePaginationMeta(req.Page, req.PageSize, total)
+	
+	response := dto.PaginatedResponse{
+		Status:     200,
+		Message:    "Scripts retrieved successfully",
+		Data:       scripts,
+		Pagination: pagination,
 	}
 	c.JSON(200, response)
 }
@@ -83,12 +192,49 @@ func GetScriptDetail(c *gin.Context) {
 }
 
 func GetLogs(c *gin.Context) {
+	var req dto.PaginationRequest
+	if err := c.ShouldBindQuery(&req); err != nil {
+		c.JSON(400, dto.ErrorResponse{Error: "Invalid pagination parameters"})
+		return
+	}
+	
+	req = util.GetPaginationDefaults(req)
+	
+	var logs []model.Logs
+	var total int64
+	
+	// Base query
+	query := db.DB.Model(&model.Logs{})
+	
+	// Apply search if provided
+	query = util.ApplySearch(query, req.Search, "log")
+	
+	// Count total records
+	query.Count(&total)
+	
+	// Apply pagination and get results
+	query = util.ApplyPagination(query, req)
+	query.Find(&logs)
+	
+	pagination := util.CalculatePaginationMeta(req.Page, req.PageSize, total)
+	
+	response := dto.PaginatedResponse{
+		Status:     200,
+		Message:    "Logs retrieved successfully",
+		Data:       logs,
+		Pagination: pagination,
+	}
+	c.JSON(200, response)
+}
+
+// GetLogsOld handles GET /get-logs-old (legacy endpoint without pagination)
+func GetLogsOld(c *gin.Context) {
 	var logs []model.Logs
 	db.DB.Limit(100).Find(&logs)
 	
 	response := dto.ApiResponse{
 		Status:  200,
-		Message: "Logs retrieved successfully",
+		Message: "Logs retrieved successfully (legacy)",
 		Data:    logs,
 	}
 	c.JSON(200, response)

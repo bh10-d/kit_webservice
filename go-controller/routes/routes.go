@@ -32,10 +32,17 @@ func SetupRoutes(r *gin.Engine) {
 	// r.GET("/health", handler.HealthCheck)           // Check all runners health
 	r.GET("/health/:id", handler.TestRunnerHealth)  // Check specific runner health
 	
-	// Management routes
+	// Management routes with pagination
 	r.GET("/get-jobs", handler.GetJobs)
-	r.GET("/jobs/:baseJobId", handler.GetJobGroup)  // New: Get jobs by base job ID
 	r.GET("/get-runners", handler.GetRunners)
-	r.GET("/get-scripts", handler.GetScripts) // Legacy endpoint
 	r.GET("/get-logs", handler.GetLogs)
+	
+	// Legacy management routes (without pagination)
+	r.GET("/get-jobs-old", handler.GetJobsOld)
+	r.GET("/get-runners-old", handler.GetRunnersOld)
+	r.GET("/get-logs-old", handler.GetLogsOld)
+	
+	// Other management routes
+	r.GET("/jobs/:baseJobId", handler.GetJobGroup)  // New: Get jobs by base job ID
+	r.GET("/get-scripts", handler.GetScripts) // Legacy endpoint
 }
